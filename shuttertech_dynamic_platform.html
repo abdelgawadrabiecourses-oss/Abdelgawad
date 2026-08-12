@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>شتر تك - ShutterTech | نظام التحكم الذكي بأبواب المحلات</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Google Arabic Font Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            },
+            emeraldCustom: {
+              500: '#10b981',
+              600: '#059669'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    /* Custom Shutter Animation Simulation */
+    .shutter-door {
+      transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+      background: repeating-linear-gradient(
+        0deg,
+        #334155,
+        #334155 12px,
+        #1e293b 12px,
+        #1e293b 16px
+      );
+    }
+
+    /* Custom Glassmorphism */
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card-hover:hover {
+      border-color: rgba(14, 165, 233, 0.4);
+      box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+  <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('client-landing')">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
+          <i class="fa-solid font-bold fa-warehouse text-2xl text-white"></i>
+        </div>
+        <div>
+          <span class="text-2xl font-extrabold bg-gradient-to-r from-white via-slate-100 to-brand-500 bg-clip-text text-transparent">
+            ShutterTech
+          </span>
+          <span class="text-xs block text-slate-400 -mt-1 font-semibold">شتر تك - للتحكم الذكي</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center gap-1 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800">
+        <button id="nav-landing" onclick="switchTab('client-landing')" class="px-4 py-2 rounded-xl text-sm font-bold transition-all text-white bg-brand-600 shadow-md">
+          <i class="fa-solid fa-house text-xs ml-1.5"></i>الرئيسية
+        </button>
+        <button id="nav-store" onclick="switchTab('client-store')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all">
+          <i class="fa-solid fa-store text-xs ml-1.5"></i>المتجر الأجهزة
+        </button>
+        <button id="nav-demo" onclick="switchTab('client-demo')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all">
+          <i class="fa-solid fa-mobile-screen-button text-xs ml-1.5"></i>تجربة التحكم بالباب
+        </button>
+        <button id="nav-admin" onclick="openAdminAuthModal()" class="px-4 py-2 rounded-xl text-sm font-bold text-amber-400 hover:text-amber-300 transition-all border border-amber-500/20 hover:bg-amber-500/10">
+          <i class="fa-solid fa-user-gear text-xs ml-1.5"></i>لوحة المالك (Admin)
+        </button>
+      </nav>
+
+      <!-- Action Button -->
+      <div class="flex items-center gap-3">
+        <button onclick="scrollToStore()" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-cart-shopping"></i>
+          اطلب جهازك الآن
+        </button>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+          <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-slate-900/95 px-4 py-3 space-y-2">
+      <button onclick="switchTab('client-landing'); toggleMobileMenu()" class="w-full text-right py-2.5 px-3 rounded-lg text-slate-200 font-semibold hover:bg-slate-800">
+        <i class="fa-solid fa-house ml-2 text-brand-500"></i>الرئيسية
+      </button>
+      <button onclick="switchTab('client-store'); toggleMobileMenu()" class="w-full text-right py-2.5 px-3 rounded-lg text-slate-200 font-semibold hover:bg-slate-800">
+        <i class="fa-solid fa-store ml-2 text-brand-500"></i>متجر الأجهزة
+      </button>
+      <button onclick="switchTab('client-demo'); toggleMobileMenu()" class="w-full text-right py-2.5 px-3 rounded-lg text-slate-200 font-semibold hover:bg-slate-800">
+        <i class="fa-solid fa-mobile-screen-button ml-2 text-brand-500"></i>تجربة التحكم بالباب
+      </button>
+      <button onclick="openAdminAuthModal(); toggleMobileMenu()" class="w-full text-right py-2.5 px-3 rounded-lg text-amber-400 font-bold hover:bg-amber-500/10 border border-amber-500/20">
+        <i class="fa-solid fa-user-gear ml-2"></i>لوحة المالك (Admin)
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: CLIENT LANDING PAGE (الرئيسية)     -->
+    <!-- ========================================== -->
+    <section id="view-client-landing" class="space-y-20">
+      
+      <!-- Hero Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-6">
+        <div class="lg:col-span-7 space-y-6 text-center lg:text-right">
+          
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs sm:text-sm font-bold">
+            <span class="w-2 h-2 rounded-full bg-brand-500 animate-ping"></span>
+            جيل جديد من الأبواب الذكية للمحلات والمستودعات
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-white">
+            حول باب محلك التقليدي إلى <span class="bg-gradient-to-r from-brand-500 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">باب ذكي بضغطة زر</span>
+          </h1>
+
+          <p class="text-slate-400 text-lg leading-relaxed max-w-2xl mx-auto lg:mx-0">
+            لا داعي للحضور بنفسك أو حمل مفاتيح ثقيلة بعد اليوم! نظام <strong class="text-white">ShutterTech</strong> يمنحك التحكم الكامل لفتح وإغلاق أبواب المحلات التجارية الرولينج عبر الموبايل من أي مكان في العالم مع أعلى درجات الأمان.
+          </p>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+            <button onclick="switchTab('client-store')" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-base shadow-xl shadow-brand-600/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+              <i class="fa-solid fa-cart-shopping"></i>
+              استكشف أجهزة التحكم
+            </button>
+            <button onclick="switchTab('client-demo')" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-card hover:bg-slate-800 text-slate-200 font-extrabold text-base border border-slate-700 transition-all flex items-center justify-center gap-3">
+              <i class="fa-solid fa-play text-brand-400"></i>
+              جرب التحكم المباشر
+            </button>
+          </div>
+
+          <!-- Feature Bullets -->
+          <div class="grid grid-cols-3 gap-4 pt-8 border-t border-slate-800 text-slate-300">
+            <div>
+              <div class="text-2xl font-black text-white">100%</div>
+              <div class="text-xs text-slate-400">سهولة في التركيب</div>
+            </div>
+            <div>
+              <div class="text-2xl font-black text-brand-400">24/7</div>
+              <div class="text-xs text-slate-400">تحكم عن بُعد لحظي</div>
+            </div>
+            <div>
+              <div class="text-2xl font-black text-emerald-400">مشفر</div>
+              <div class="text-xs text-slate-400">حماية بأعلى المعايير</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Shutter Visualiser Component -->
+        <div class="lg:col-span-5">
+          <div class="glass-card rounded-3xl p-6 relative overflow-hidden shadow-2xl border border-slate-800">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2">
+                <span id="hero-status-dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="hero-status-text" class="text-sm font-bold text-slate-200">محاكي الباب الذكي: مفتوح</span>
+              </div>
+              <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">IoT Direct Relay</span>
+            </div>
+
+            <!-- Shutter Graphic Container -->
+            <div class="relative w-full h-72 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex flex-col justify-end p-2">
+              <!-- Inside Store Graphic backdrop -->
+              <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-slate-900 to-slate-950">
+                <div class="text-center p-4">
+                  <i class="fa-solid fa-store text-6xl text-brand-500/20 mb-2"></i>
+                  <div class="text-sm font-bold text-slate-500">معرض المحل التجاري</div>
+                  <div class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-shield-halved ml-1"></i>محمي بواسطة ShutterTech</div>
+                </div>
+              </div>
+
+              <!-- Rolling Shutter Door Animated -->
+              <div id="hero-shutter-door" class="shutter-door relative w-full h-12 z-10 rounded-t-sm shadow-2xl border-b-4 border-slate-600 flex items-center justify-center">
+                <div class="w-16 h-1 bg-slate-500/40 rounded-full"></div>
+              </div>
+            </div>
+
+            <!-- Interactive Quick Controls -->
+            <div class="mt-5 grid grid-cols-3 gap-2">
+              <button onclick="simulateShutterAction('open')" class="py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold text-xs border border-emerald-500/30 transition-all">
+                <i class="fa-solid fa-arrow-up ml-1"></i>فتح الباب
+              </button>
+              <button onclick="simulateShutterAction('stop')" class="py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 font-bold text-xs border border-amber-500/30 transition-all">
+                <i class="fa-solid fa-pause ml-1"></i>إيقاف
+              </button>
+              <button onclick="simulateShutterAction('close')" class="py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 font-bold text-xs border border-rose-500/30 transition-all">
+                <i class="fa-solid fa-arrow-down ml-1"></i>إغلاق الباب
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-12">
+        <div class="text-center max-w-2xl mx-auto">
+          <h2 class="text-3xl font-extrabold text-white">لماذا يختار أصحاب المحلات نظام ShutterTech؟</h2>
+          <p class="text-slate-400 mt-3">صممنا النظام ليلبي كافة احتياجات الأمن والمرونة في إدارة الأبواب التجارية</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Feature 1 -->
+          <div class="glass-card p-8 rounded-3xl space-y-4 glass-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-mobile-screen"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">التحكم من أي مكان</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              افتح أو أغلق باب المحل للبضائع أو الموظفين وأنت في منزلك أو أثناء سفرك بضغطة واحدة من هاتف المحمول.
+            </p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="glass-card p-8 rounded-3xl space-y-4 glass-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">تركيب بدون تعديلات معقدة</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              يتم توصيل الجهاز مباشرة بمحرك باب الرولينج الحالي بدون الحاجة لتغيير الباب أو تغيير المحرك.
+            </p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="glass-card p-8 rounded-3xl space-y-4 glass-card-hover transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center text-2xl">
+              <i class="fa-solid fa-users-gear"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">صلاحيات العمال والموظفين</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              يمكنك إعطاء صلاحية الفتح والإغلاق لعمالك مع إمكانية سحب الصلاحيات ومتابعة وقت الفتح بالساعة والدقيقة.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: CLIENT WEB STORE (المتجر)          -->
+    <!-- ========================================== -->
+    <section id="view-client-store" class="hidden space-y-10">
+      
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <h2 class="text-3xl font-extrabold text-white">متجر أجهزة التحكم الذكية</h2>
+          <p class="text-slate-400 text-sm mt-1">اختر الجهاز المناسب لنوع وحجم أبواب المحل التجاري لديك</p>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-xl text-xs text-slate-300">
+          <i class="fa-solid fa-shield-check text-emerald-400 text-sm"></i>
+          جميع الأجهزة تشمل ضمان سنة كاملة والدعم الفني
+        </div>
+      </div>
+
+      <!-- Products Grid (Populated dynamically from Firestore) -->
+      <div id="store-products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Loading Spinner Placeholder -->
+        <div class="col-span-3 text-center py-12 text-slate-500">
+          <i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-500 mb-3 block"></i>
+          جاري تحميل المنتجات المتاحة من قاعدة البيانات...
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 3: LIVE CLIENT DOOR DASHBOARD         -->
+    <!-- ========================================== -->
+    <section id="view-client-demo" class="hidden space-y-8">
+      
+      <div class="max-w-3xl mx-auto space-y-6">
+        
+        <div class="text-center space-y-2">
+          <span class="px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 text-xs font-bold border border-brand-500/20">تطبيق العميل الحقيقي</span>
+          <h2 class="text-3xl font-extrabold text-white">لوحة تحكم باب المحل الذكي</h2>
+          <p class="text-slate-400 text-sm">هذه هي الواجهة التفاعلية التي يتحكم من خلالها العميل في فتح وغلق الباب مباشرة</p>
+        </div>
+
+        <div class="glass-card rounded-3xl p-8 border border-slate-800 shadow-2xl relative">
+          
+          <!-- Door Connection Header -->
+          <div class="flex items-center justify-between pb-6 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400 border border-slate-700">
+                <i class="fa-solid fa-wifi text-lg animate-pulse"></i>
+              </div>
+              <div>
+                <div class="text-white font-bold text-base" id="client-door-name">باب الفرع الرئيسي - (Shutter #1)</div>
+                <div class="text-xs text-slate-400 flex items-center gap-2">
+                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span> متصل بالسيرفر والواي فاي
+                </div>
+              </div>
+            </div>
+
+            <button onclick="toggleSecurityLock()" id="btn-security-lock" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition-all flex items-center gap-2">
+              <i class="fa-solid fa-lock text-emerald-400" id="lock-icon"></i>
+              <span id="lock-text">النظام مؤمن</span>
+            </button>
+          </div>
+
+          <!-- Central Shutter Visual Display -->
+          <div class="my-8 text-center space-y-4">
+            
+            <div class="relative w-full max-w-sm mx-auto h-64 bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-800 shadow-inner flex flex-col justify-end p-2">
+              <div class="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950">
+                <i class="fa-solid fa-shop text-7xl text-brand-500/10"></i>
+                <span class="text-xs font-semibold text-slate-500 mt-2">داخل المحل - رؤية المحاكي</span>
+              </div>
+
+              <!-- Main Shutter Canvas Animation -->
+              <div id="live-client-shutter" class="shutter-door w-full h-10 rounded-t-sm shadow-2xl relative border-b-4 border-slate-500 flex items-center justify-center">
+                <div class="w-20 h-1.5 bg-slate-400/50 rounded-full"></div>
+              </div>
+            </div>
+
+            <!-- Status Indicator Badge -->
+            <div class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-slate-800 border border-slate-700 shadow-md">
+              <span class="text-slate-400 text-sm font-semibold">حالة الباب الحالية:</span>
+              <span id="live-status-badge" class="font-extrabold text-emerald-400 text-sm">مفتوح بالكامل 🟩</span>
+            </div>
+          </div>
+
+          <!-- Main Touch Action Buttons -->
+          <div class="grid grid-cols-3 gap-4">
+            
+            <button onclick="controlDoorAction('open')" class="p-4 rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-emerald-600/30 transition-all transform active:scale-95 flex flex-col items-center justify-center gap-2">
+              <i class="fa-solid fa-circle-arrow-up text-2xl"></i>
+              فتح الباب
+            </button>
+
+            <button onclick="controlDoorAction('pause')" class="p-4 rounded-2xl bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-amber-600/30 transition-all transform active:scale-95 flex flex-col items-center justify-center gap-2">
+              <i class="fa-solid fa-circle-pause text-2xl"></i>
+              إيقاف مؤقت
+            </button>
+
+            <button onclick="controlDoorAction('close')" class="p-4 rounded-2xl bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-rose-600/30 transition-all transform active:scale-95 flex flex-col items-center justify-center gap-2">
+              <i class="fa-solid fa-circle-arrow-down text-2xl"></i>
+              إغلاق الباب
+            </button>
+
+          </div>
+
+          <!-- Activity History Stream -->
+          <div class="mt-8 pt-6 border-t border-slate-800 space-y-3">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">سجل العمليات الأخير للباب:</h4>
+            <div id="activity-logs" class="space-y-2 max-h-36 overflow-y-auto text-xs text-slate-300 pr-1">
+              <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+                <span><i class="fa-solid fa-check text-emerald-400 ml-2"></i>تم إرسال أمر فتح الباب بنجاح</span>
+                <span class="text-slate-500">منذ دقيقة</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 4: OWNER ADMIN DASHBOARD (المالك)     -->
+    <!-- ========================================== -->
+    <section id="view-owner-admin" class="hidden space-y-10">
+      
+      <!-- Admin Header -->
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20 mb-2">
+            <i class="fa-solid fa-user-shield"></i> لوحة تحكم المالك والشركة
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">إدارة الأجهزة، الطلبات والمبيعات</h2>
+          <p class="text-slate-400 text-sm">من هنا يمكنك إضافة منتجات جديدة، تعديل الأسعار، ومتابعة طلبات العملاء فور ورودها من الفايربيز</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="openAddProductModal()" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-600/30 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            إضافة جهاز جديد للمتجر
+          </button>
+          <button onclick="switchTab('client-landing')" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm border border-slate-700">
+            خروج من اللوحة
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Metric Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-bold mb-2">
+            إجمالي طلبات الشراء
+            <i class="fa-solid fa-cart-shopping text-brand-400"></i>
+          </div>
+          <div class="text-3xl font-black text-white" id="stat-total-orders">0</div>
+          <div class="text-xs text-emerald-400 mt-2"><i class="fa-solid fa-arrow-up ml-1"></i>مربوط بقاعدة البيانات</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-bold mb-2">
+            الأجهزة المتاحة بالمتجر
+            <i class="fa-solid fa-microchip text-emerald-400"></i>
+          </div>
+          <div class="text-3xl font-black text-white" id="stat-total-products">0</div>
+          <div class="text-xs text-slate-400 mt-2">تعديل فوري من اللوحة</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-bold mb-2">
+            الأبواب المفعلة أونلاين
+            <i class="fa-solid fa-warehouse text-amber-400"></i>
+          </div>
+          <div class="text-3xl font-black text-white">124</div>
+          <div class="text-xs text-emerald-400 mt-2">يعمل بنجاح دون مشاكل</div>
+        </div>
+
+        <div class="glass-card p-6 rounded-2xl border border-slate-800">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-bold mb-2">
+            حالة اتصال الفايربيز
+            <i class="fa-solid fa-fire text-orange-500"></i>
+          </div>
+          <div class="text-lg font-black text-emerald-400 flex items-center gap-2 mt-1">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            Firestore Connected
+          </div>
+          <div class="text-xs text-slate-500 mt-1">Project ID: landing-78135</div>
+        </div>
+      </div>
+
+      <!-- Orders Received Table -->
+      <div class="glass-card rounded-3xl p-6 border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-brand-500"></i>
+            طلبات الشراء والتسجيل الجديدة من العملاء
+          </h3>
+          <span class="text-xs text-slate-400">تحديث لحظي بدون إعادة تحميل الصفحة</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm text-slate-300">
+            <thead class="bg-slate-900/80 text-slate-400 text-xs uppercase border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">اسم العميل</th>
+                <th class="py-3 px-4">اسم المحل التجارية</th>
+                <th class="py-3 px-4">رقم الهاتف</th>
+                <th class="py-3 px-4">الجهاز المطلوب</th>
+                <th class="py-3 px-4">العنوان</th>
+                <th class="py-3 px-4">حالة الطلب</th>
+                <th class="py-3 px-4">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-table-body" class="divide-y divide-slate-800">
+              <tr>
+                <td colspan="7" class="text-center py-8 text-slate-500">جاري جلب الطلبات...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Products Management Grid in Admin -->
+      <div class="glass-card rounded-3xl p-6 border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-boxes-stacked text-amber-400"></i>
+            إدارة أجهزة المتجر والتعديل عليها
+          </h3>
+        </div>
+
+        <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Dynamic Products Editor Cards -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="mt-auto border-t border-slate-800/80 glass-card py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 text-xs space-y-2">
+      <p>© 2026 ShutterTech - جميع الحقوق محفوظة | نظام التحكم الذكي بأبواب المحلات التجارية</p>
+      <p class="text-slate-600">Firebase Project ID: <span class="text-brand-500 font-mono">landing-78135</span></p>
+    </div>
+  </footer>
+
+  
+  <!-- MODAL 1: Customer Order Registration Modal -->
+  <div id="modal-order" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg rounded-3xl border border-slate-700 p-6 sm:p-8 space-y-6 relative shadow-2xl">
+      <button onclick="closeModal('modal-order')" class="absolute top-5 left-5 text-slate-400 hover:text-white text-xl">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <span class="text-xs font-bold text-brand-400 uppercase tracking-wider">طلب جهاز جديد</span>
+        <h3 class="text-2xl font-black text-white mt-1">تسجيل بيانات تركيب الجهاز</h3>
+        <p class="text-slate-400 text-xs mt-1">أدخل بيانات المحل وسيقوم مهندس التركيبات بالتواصل معك فوراً</p>
+      </div>
+
+      <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-4">
+        <input type="hidden" id="order-selected-product" value="" />
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">اسمك الكريـم</label>
+          <input type="text" id="order-customer-name" required placeholder="مثال: أحمد محمود" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">اسم المحل التجاري / الشركة</label>
+          <input type="text" id="order-store-name" required placeholder="مثال: سوبرماركت البركة" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف (واتساب)</label>
+            <input type="tel" id="order-phone" required placeholder="010XXXXXXXX" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">المحافظة / المدينة</label>
+            <input type="text" id="order-city" required placeholder="مثال: القاهرة / نصر" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">عنوان المحل تفصيلياً</label>
+          <textarea id="order-address" rows="2" placeholder="شارع التجارة - بجوار..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit-order" class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-extrabold text-base shadow-lg shadow-brand-500/25 transition-all">
+          تأكيد وإرسال الطلب للشركة
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Admin Auth Pin Modal -->
+  <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-sm rounded-3xl border border-slate-700 p-6 text-center space-y-6 relative shadow-2xl">
+      <button onclick="closeModal('modal-admin-auth')" class="absolute top-5 left-5 text-slate-400 hover:text-white text-xl">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center text-2xl">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+
+      <div>
+        <h3 class="text-2xl font-black text-white">دخول المالك</h3>
+        <p class="text-slate-400 text-xs mt-1">أدخل كلمة المرور الخاصة بالشركة للوصول للوحة التحكم</p>
+      </div>
+
+      <div class="space-y-4">
+        <input type="password" id="admin-passcode" placeholder="أدخل كود المالك (الافتراضي: 1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-white text-lg font-mono focus:outline-none focus:border-amber-500" />
+        
+        <button onclick="verifyAdminPasscode()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/20 transition-all">
+          دخول لوحة التعديل
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Add Product Modal (Admin) -->
+  <div id="modal-add-product" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-lg rounded-3xl border border-slate-700 p-6 space-y-6 relative shadow-2xl">
+      <button onclick="closeModal('modal-add-product')" class="absolute top-5 left-5 text-slate-400 hover:text-white text-xl">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <h3 class="text-2xl font-black text-white">إضافة جهاز جديد للمتجر</h3>
+        <p class="text-slate-400 text-xs mt-1">سيتم حفظ الجهاز في الفايربيز وعرضه للعملاء فوراً</p>
+      </div>
+
+      <form id="add-product-form" onsubmit="handleAddProductSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">اسم الجهاز</label>
+          <input type="text" id="prod-name" required placeholder="مثال: ShutterTech Pro Dual" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">السعر (بالجنية/الريال)</label>
+            <input type="number" id="prod-price" required placeholder="1200" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">نوع المحرك المدعوم</label>
+            <input type="text" id="prod-type" required placeholder="محرك رولينج سنغل أو ديوال" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">وصف الجهاز ومميزاته</label>
+          <textarea id="prod-desc" rows="3" required placeholder="يتحمل قدرة عالية ومزود بمخرجين للتحكم..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-extrabold text-base shadow-lg transition-all">
+          حفظ الجهاز في الفايربيز
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 left-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      doc, 
+      setDoc, 
+      updateDoc, 
+      deleteDoc, 
+      onSnapshot, 
+      query 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { 
+      getAuth, 
+      signInAnonymously, 
+      signInWithCustomToken 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // User-provided Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyB7_S36IbdEUg-jgKqZRnNMqcwnQKOn9EA",
+      authDomain: "landing-78135.firebaseapp.com",
+      projectId: "landing-78135",
+      storageBucket: "landing-78135.firebasestorage.app",
+      messagingSenderId: "57060942002",
+      appId: "1:57060942002:web:02a18fe3e8ab12cdcf29ab",
+      measurementId: "G-RQFD5CVNK3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Global App State Variables
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'landing-78135';
+    let currentUser = null;
+    let productsList = [];
+    let ordersList = [];
+    let isSecurityLocked = false;
+    let currentShutterStatus = 'OPEN'; // 'OPEN', 'CLOSED', 'PAUSED'
+
+    async function initAuth() {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = userCredential.user;
+        } else {
+          const userCredential = await signInAnonymously(auth);
+          currentUser = userCredential.user;
+        }
+        console.log("Firebase Auth success. User UID:", currentUser?.uid);
+        
+        // Start live snapshot listeners
+        setupFirestoreListeners();
+      } catch (err) {
+        console.error("Auth error:", err);
+        showToast("تنبيه: تعمل في وضع العرض المحلي بدون اتصال حي بالسيرفر", "warning");
+      }
+    }
+
+    function setupFirestoreListeners() {
+      // Collections Paths according to environment rules
+      const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+      const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+
+      // 1. Listen for Products
+      onSnapshot(query(productsColRef), (snapshot) => {
+        productsList = [];
+        snapshot.forEach((docSnap) => {
+          productsList.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        
+        // Seed default products if empty in Firestore
+        if (productsList.length === 0) {
+          seedInitialProducts(productsColRef);
+        } else {
+          renderProductsStore();
+          renderAdminProducts();
+        }
+      }, (error) => {
+        console.error("Products listener error:", error);
+      });
+
+      // 2. Listen for Customer Orders
+      onSnapshot(query(ordersColRef), (snapshot) => {
+        ordersList = [];
+        snapshot.forEach((docSnap) => {
+          ordersList.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        
+        renderAdminOrdersTable();
+        document.getElementById('stat-total-orders').textContent = ordersList.length;
+      }, (error) => {
+        console.error("Orders listener error:", error);
+      });
+    }
+
+    async function seedInitialProducts(productsColRef) {
+      const defaults = [
+        {
+          name: "ShutterTech Basic 1.0",
+          price: 1450,
+          type: "للأبواب الرولينج العادية",
+          desc: "جهاز تحكم ذكي مزود بريلاي واحد، يتصل بالواي فاي والـ 4G، وتطبيق الموبايل المباشر.",
+          icon: "fa-microchip"
+        },
+        {
+          name: "ShutterTech Pro Dual",
+          price: 2200,
+          type: "للأبواب الثقيلة والمزدوجة",
+          desc: "يحتوي على مدخلين محرك للتحكم في بابين رولينج معاً، وحساس مغناطيسي لقياس انغلاق الباب.",
+          icon: "fa-robot"
+        },
+        {
+          name: "ShutterTech Heavy Industrial",
+          price: 3600,
+          type: "للمصانع والمستودعات الكبيرة",
+          desc: "جهاز صناعي مقاوم للماء والأتربة بمعيار IP67، يدعم الريموت التقليدي وبصمة الإصبع + الموبايل.",
+          icon: "fa-industry"
+        }
+      ];
+
+      for (const item of defaults) {
+        await addDoc(productsColRef, {
+          ...item,
+          createdAt: new Date().toISOString()
+        });
+      }
+    }
+
+    function renderProductsStore() {
+      const grid = document.getElementById('store-products-grid');
+      document.getElementById('stat-total-products').textContent = productsList.length;
+
+      if (!grid) return;
+
+      if (productsList.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 text-center text-slate-500">لا توجد أجهزة متاحة حالياً.</div>`;
+        return;
+      }
+
+      grid.innerHTML = productsList.map(prod => `
+        <div class="glass-card rounded-3xl p-6 border border-slate-800 space-y-5 glass-card-hover transition-all flex flex-col justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20">
+                <i class="fa-solid ${prod.icon || 'fa-microchip'}"></i>
+              </div>
+              <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">${prod.type}</span>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-bold text-white">${prod.name}</h3>
+              <p class="text-slate-400 text-xs mt-2 leading-relaxed">${prod.desc}</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-400 block">السعر التقديري</span>
+              <span class="text-2xl font-black text-emerald-400">${prod.price} <span class="text-xs text-slate-400">ج.م</span></span>
+            </div>
+            <button onclick="openOrderModal('${prod.name}')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-lg transition-all">
+              طلب وتحديد الموعد
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminOrdersTable() {
+      const tbody = document.getElementById('admin-orders-table-body');
+      if (!tbody) return;
+
+      if (ordersList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">لم يتم استلام أي طلبات حتى الآن</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = ordersList.map(order => `
+        <tr class="hover:bg-slate-800/50 transition-colors">
+          <td class="py-3 px-4 font-bold text-white">${order.customerName || '-'}</td>
+          <td class="py-3 px-4 text-brand-400">${order.storeName || '-'}</td>
+          <td class="py-3 px-4 font-mono dir-ltr text-right">${order.phone || '-'}</td>
+          <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md bg-slate-800 text-xs text-slate-200 border border-slate-700">${order.selectedProduct || 'عام'}</span></td>
+          <td class="py-3 px-4 text-xs text-slate-400 max-w-xs truncate">${order.city || ''} - ${order.address || ''}</td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+              ${order.status === 'completed' ? 'مكتمل' : 'طلب جديد'}
+            </span>
+          </td>
+          <td class="py-3 px-4">
+            <button onclick="toggleOrderStatus('${order.id}', '${order.status}')" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">
+              تغيير الحالة
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAdminProducts() {
+      const container = document.getElementById('admin-products-list');
+      if (!container) return;
+
+      container.innerHTML = productsList.map(prod => `
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 relative">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white">${prod.name}</span>
+            <button onclick="deleteProduct('${prod.id}')" class="text-rose-400 hover:text-rose-300 text-xs">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+          <div class="text-xs text-slate-400">${prod.desc}</div>
+          <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-800">
+            <span class="text-emerald-400 font-bold text-sm">${prod.price} ج.م</span>
+            <span class="text-slate-500">${prod.type}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.switchTab = function(tabName) {
+      const views = ['client-landing', 'client-store', 'client-demo', 'owner-admin'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.add('hidden');
+
+        const navBtn = document.getElementById(`nav-${v.replace('client-', '')}`);
+        if (navBtn) {
+          navBtn.classList.remove('bg-brand-600', 'text-white', 'shadow-md');
+          navBtn.classList.add('text-slate-400');
+        }
+      });
+
+      const activeView = document.getElementById(`view-${tabName}`);
+      if (activeView) activeView.classList.remove('hidden');
+
+      const activeNav = document.getElementById(`nav-${tabName.replace('client-', '')}`);
+      if (activeNav) {
+        activeNav.classList.add('bg-brand-600', 'text-white', 'shadow-md');
+        activeNav.classList.remove('text-slate-400');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.scrollToStore = function() {
+      switchTab('client-store');
+    };
+
+    window.toggleMobileMenu = function() {
+      const menu = document.getElementById('mobile-menu');
+      if (menu) menu.classList.toggle('hidden');
+    };
+
+    window.openModal = function(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('hidden');
+    };
+
+    window.closeModal = function(id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.add('hidden');
+    };
+
+    window.openOrderModal = function(productName) {
+      document.getElementById('order-selected-product').value = productName || 'ShutterTech Device';
+      openModal('modal-order');
+    };
+
+    window.openAdminAuthModal = function() {
+      openModal('modal-admin-auth');
+    };
+
+    window.openAddProductModal = function() {
+      openModal('modal-add-product');
+    };
+
+    window.verifyAdminPasscode = function() {
+      const code = document.getElementById('admin-passcode').value;
+      if (code === '1234' || code === 'admin') {
+        closeModal('modal-admin-auth');
+        switchTab('owner-admin');
+        showToast("مرحباً بك يا مدير النظام! تم تسجيل الدخول بنجاح", "success");
+      } else {
+        showToast("كود المرور غير صحيح! الكود الافتراضي هو 1234", "error");
+      }
+    };
+
+    window.handleOrderSubmit = async function(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btn-submit-order');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin ml-2"></i>جاري الإرسال...`;
+
+      const orderData = {
+        customerName: document.getElementById('order-customer-name').value,
+        storeName: document.getElementById('order-store-name').value,
+        phone: document.getElementById('order-phone').value,
+        city: document.getElementById('order-city').value,
+        address: document.getElementById('order-address').value,
+        selectedProduct: document.getElementById('order-selected-product').value,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+        await addDoc(ordersColRef, orderData);
+        
+        closeModal('modal-order');
+        document.getElementById('order-form').reset();
+        showToast("تم إرسال طلبك بنجاح! سيتواصل معك أحد مهندسينا قريباً", "success");
+      } catch (err) {
+        console.error("Order submit error:", err);
+        showToast("حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `تأكيد وإرسال الطلب للشركة`;
+      }
+    };
+
+    window.handleAddProductSubmit = async function(e) {
+      e.preventDefault();
+
+      const prodData = {
+        name: document.getElementById('prod-name').value,
+        price: Number(document.getElementById('prod-price').value),
+        type: document.getElementById('prod-type').value,
+        desc: document.getElementById('prod-desc').value,
+        icon: "fa-microchip",
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+        await addDoc(productsColRef, prodData);
+        
+        closeModal('modal-add-product');
+        document.getElementById('add-product-form').reset();
+        showToast("تمت إضافة الجهاز للمتجر بنجاح!", "success");
+      } catch (err) {
+        console.error("Add product error:", err);
+        showToast("تعذر إضافة الجهاز إلى الفايربيز", "error");
+      }
+    };
+
+    window.toggleOrderStatus = async function(orderId, currentStatus) {
+      const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
+        await updateDoc(docRef, { status: newStatus });
+        showToast("تم تحديث حالة الطلب", "success");
+      } catch (err) {
+        showToast("تعذر تحديث الحالة", "error");
+      }
+    };
+
+    window.deleteProduct = async function(prodId) {
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', prodId);
+        await deleteDoc(docRef);
+        showToast("تم حذف الجهاز من المتجر", "info");
+      } catch (err) {
+        showToast("تعذر الحذف", "error");
+      }
+    };
+
+    window.simulateShutterAction = function(action) {
+      const door = document.getElementById('hero-shutter-door');
+      const text = document.getElementById('hero-status-text');
+      const dot = document.getElementById('hero-status-dot');
+
+      if (!door) return;
+
+      if (action === 'open') {
+        door.style.height = '1rem';
+        text.textContent = 'محاكي الباب الذكي: مفتوح بالكامل';
+        dot.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse';
+      } else if (action === 'close') {
+        door.style.height = '100%';
+        text.textContent = 'محاكي الباب الذكي: مغلق بالكامل';
+        dot.className = 'w-3 h-3 rounded-full bg-rose-500';
+      } else if (action === 'stop') {
+        door.style.height = '50%';
+        text.textContent = 'محاكي الباب الذكي: متوقف مؤقتاً';
+        dot.className = 'w-3 h-3 rounded-full bg-amber-500';
+      }
+    };
+
+    window.controlDoorAction = function(action) {
+      if (isSecurityLocked) {
+        showToast("تنبيه: الباب مؤمن ضد التحكم! قم بفك القفل أولاً", "warning");
+        return;
+      }
+
+      const door = document.getElementById('live-client-shutter');
+      const badge = document.getElementById('live-status-badge');
+      const activityContainer = document.getElementById('activity-logs');
+
+      let actionMessage = '';
+      let badgeHtml = '';
+
+      if (action === 'open') {
+        door.style.height = '1rem';
+        badgeHtml = 'مفتوح بالكامل 🟩';
+        actionMessage = 'تم فتح الباب من الهاتف المحمول';
+        currentShutterStatus = 'OPEN';
+      } else if (action === 'close') {
+        door.style.height = '100%';
+        badgeHtml = 'مغلق بالكامل 🔴';
+        actionMessage = 'تم إغلاق الباب من الهاتف المحمول';
+        currentShutterStatus = 'CLOSED';
+      } else if (action === 'pause') {
+        door.style.height = '50%';
+        badgeHtml = 'متوقف منتصف المسافة 🟡';
+        actionMessage = 'تم إيقاف حركة الباب مؤقتاً';
+        currentShutterStatus = 'PAUSED';
+      }
+
+      if (badge) badge.innerHTML = badgeHtml;
+
+      // Log activity in UI
+      if (activityContainer) {
+        const timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const newLog = document.createElement('div');
+        newLog.className = 'p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs';
+        newLog.innerHTML = `<span><i class="fa-solid fa-signal text-brand-400 ml-2"></i>${actionMessage}</span><span class="text-slate-500 font-mono">${timeStr}</span>`;
+        activityContainer.prepend(newLog);
+      }
+
+      showToast(`تم إرسال الإشارة للجهاز: ${actionMessage}`, "success");
+    };
+
+    window.toggleSecurityLock = function() {
+      isSecurityLocked = !isSecurityLocked;
+      const icon = document.getElementById('lock-icon');
+      const text = document.getElementById('lock-text');
+      const btn = document.getElementById('btn-security-lock');
+
+      if (isSecurityLocked) {
+        icon.className = 'fa-solid fa-lock text-rose-400';
+        text.textContent = 'النظام مٌقفل ومُؤمن';
+        btn.classList.add('border-rose-500/30', 'bg-rose-500/10');
+        showToast("تم تفعيل قفل الأمان الإلكتروني لمنع الفتح", "warning");
+      } else {
+        icon.className = 'fa-solid fa-lock-open text-emerald-400';
+        text.textContent = 'النظام مؤمن (متاح للتحكم)';
+        btn.classList.remove('border-rose-500/30', 'bg-rose-500/10');
+        showToast("تم فتح قفل الأمان - يمكنك التحكم الآن", "info");
+      }
+    };
+
+    function showToast(message, type = "info") {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      
+      let borderClass = 'border-brand-500 bg-slate-900 text-white';
+      let icon = '<i class="fa-solid fa-circle-info text-brand-400 ml-2"></i>';
+
+      if (type === 'success') {
+        borderClass = 'border-emerald-500 bg-slate-900 text-white';
+        icon = '<i class="fa-solid fa-circle-check text-emerald-400 ml-2"></i>';
+      } else if (type === 'error') {
+        borderClass = 'border-rose-500 bg-slate-900 text-white';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-rose-400 ml-2"></i>';
+      } else if (type === 'warning') {
+        borderClass = 'border-amber-500 bg-slate-900 text-white';
+        icon = '<i class="fa-solid fa-shield-cat text-amber-400 ml-2"></i>';
+      }
+
+      toast.className = `p-4 rounded-xl shadow-2xl border ${borderClass} flex items-center text-xs font-bold pointer-events-auto transition-all transform translate-y-2 opacity-0 max-w-sm`;
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Initialize Auth and App System
+    window.addEventListener('DOMContentLoaded', () => {
+      initAuth();
+    });
+  </script>
+</body>
+</html>
