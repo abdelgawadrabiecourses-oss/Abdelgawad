@@ -733,22 +733,24 @@
       signInWithCustomToken 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    // User-provided Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyB7_S36IbdEUg-jgKqZRnNMqcwnQKOn9EA",
-      authDomain: "landing-78135.firebaseapp.com",
-      projectId: "landing-78135",
-      storageBucket: "landing-78135.firebasestorage.app",
-      messagingSenderId: "57060942002",
-      appId: "1:57060942002:web:02a18fe3e8ab12cdcf29ab",
-      measurementId: "G-RQFD5CVNK3"
-    };
+    // Dynamic Firebase Configuration with fallback
+    const firebaseConfig = typeof __firebase_config !== 'undefined'
+      ? (typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config)
+      : {
+          apiKey: "AIzaSyB7_S36IbdEUg-jgKqZRnNMqcwnQKOn9EA",
+          authDomain: "landing-78135.firebaseapp.com",
+          projectId: "landing-78135",
+          storageBucket: "landing-78135.firebasestorage.app",
+          messagingSenderId: "57060942002",
+          appId: "1:57060942002:web:02a18fe3e8ab12cdcf29ab",
+          measurementId: "G-RQFD5CVNK3"
+        };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Initial default dataset for instant offline rendering
+    // Initial default dataset for instant offline fallback
     const defaultProducts = [
       { id: "p1", name: "ShutterTech Basic 1.0", price: 1450, category: "basic", type: "للأبواب الفرادية", desc: "جهاز تحكم ذكي أساسي مزود بـ Relay واحد، يتصل بالواي فاي والـ 4G وتطبيق الموبايل المباشر.", icon: "fa-microchip" },
       { id: "p2", name: "ShutterTech Smart Relay Mini", price: 980, category: "basic", type: "للمحلات الصغيرة", desc: "وحدة اقتصادية فائقة الصغر سريعة التركيب داخل علبة المفتاح الحالية للباب بدون تعديل.", icon: "fa-bolt" },
@@ -766,7 +768,7 @@
     // Global App State Variables
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'landing-78135';
     let currentUser = null;
-    let productsList = [...defaultProducts]; // Start immediately with default list
+    let productsList = [...defaultProducts];
     let ordersList = [];
     let shoppingCart = [];
     let isSecurityLocked = false;
@@ -871,24 +873,20 @@
 
     // Quick Test Demo Filler Function
     window.fillQuickDemoOrder = function() {
-      // 1. Ensure at least one product is in cart
       if (shoppingCart.length === 0) {
-        addToCart('p1'); // Add ShutterTech Basic 1.0
-        addToCart('p8'); // Add Solar & Battery Backup
+        addToCart('p1');
+        addToCart('p8');
       }
 
-      // 2. Auto-fill form fields
       document.getElementById('order-customer-name').value = "أحمد محمد محمود (طلب تجريبي)";
       document.getElementById('order-store-name').value = "سوبرماركت التيسير الذكي";
       document.getElementById('order-phone').value = "01012345678";
       document.getElementById('order-city').value = "القاهرة - المعادي";
       document.getElementById('order-address').value = "شارع 9 الرئيسي - بجوار محطة المترو";
 
-      // Select default payment method for demo
       const vodafoneRadio = document.querySelector('input[name="payment-method"][value="فودافون كاش / محفظة"]');
       if (vodafoneRadio) vodafoneRadio.checked = true;
 
-      // 3. Open Modal
       openCartModal();
       showToast("تم ملء بيانات الطلب التجريبي بنجاح! اضغط تأكيد لإرساله للفايربيز", "success");
     };
@@ -896,39 +894,52 @@
     async function initAuth() {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-          currentUser = userCredential.user;
+          try {
+            const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+            currentUser = userCredential.user;
+          } catch (tokenErr) {
+            console.warn("Custom token sign-in failed, falling back to anonymous auth:", tokenErr);
+            const userCredential = await signInAnonymously(auth);
+            currentUser = userCredential.user;
+          }
         } else {
           const userCredential = await signInAnonymously(auth);
           currentUser = userCredential.user;
         }
-        setupFirestoreListeners();
+
+        if (currentUser) {
+          setupFirestoreListeners();
+        }
       } catch (err) {
-        console.warn("Auth error or offline mode active:", err);
+        console.error("Auth error:", err);
       } finally {
-        // Initial immediate render
         renderProductsStore();
         renderAdminProducts();
       }
     }
 
     function setupFirestoreListeners() {
+      if (!auth.currentUser && !currentUser) return;
+
       const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
       const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
 
-      // 1. Listen for Store Products
+      // 1. Listen for Store Products with auto-seeding for empty DB
       onSnapshot(query(productsColRef), (snapshot) => {
-        if (!snapshot.empty) {
+        if (snapshot.empty) {
+          seedDefaultProducts();
+        } else {
           const remoteList = [];
           snapshot.forEach((docSnap) => {
             remoteList.push({ id: docSnap.id, ...docSnap.data() });
           });
           productsList = remoteList;
+          renderProductsStore();
+          renderAdminProducts();
         }
-        renderProductsStore();
-        renderAdminProducts();
       }, (error) => {
         console.error("Products listener error:", error);
+        showToast("خطأ في جلب المنتجات من الفايربيز", "error");
       });
 
       // 2. Listen for Customer Orders
@@ -943,7 +954,20 @@
         if (statEl) statEl.textContent = ordersList.length;
       }, (error) => {
         console.error("Orders listener error:", error);
+        showToast("خطأ في جلب الطلبات من الفايربيز", "error");
       });
+    }
+
+    async function seedDefaultProducts() {
+      try {
+        const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
+        for (const prod of defaultProducts) {
+          const { id, ...prodData } = prod;
+          await setDoc(doc(productsColRef, id), prodData);
+        }
+      } catch (err) {
+        console.error("Error seeding default products to Firestore:", err);
+      }
     }
 
     window.filterProducts = function(cat, btnElement) {
@@ -1008,20 +1032,6 @@
         </div>
       `).join('');
     }
-
-    window.filterProducts = function(cat) {
-      activeCategory = cat;
-      const btns = document.querySelectorAll('.prod-filter-btn');
-      btns.forEach(b => {
-        b.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
-        b.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
-      });
-
-      event.target.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
-      event.target.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
-
-      renderProductsStore();
-    };
 
     function renderAdminOrdersTable() {
       const tbody = document.getElementById('admin-orders-table-body');
@@ -1096,12 +1106,16 @@
         return;
       }
 
+      if (!auth.currentUser && !currentUser) {
+        showToast("جاري الاتصال بقاعدة البيانات، يرجى المحاولة بعد لحظات", "warning");
+        return;
+      }
+
       const btn = document.getElementById('btn-submit-order');
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin ml-2"></i>جاري إرسال الطلب للسيرفر...`;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin ml-2"></i>جاري إرسال الطلب للفايربيز...`;
 
       const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-
       const paymentRadio = document.querySelector('input[name="payment-method"]:checked');
       const selectedPayment = paymentRadio ? paymentRadio.value : 'الدفع عند التركيب';
 
@@ -1122,16 +1136,15 @@
         const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
         await addDoc(ordersColRef, orderData);
         
-        // Reset Cart and Modal Form
         shoppingCart = [];
         updateCartBadge();
         closeModal('modal-cart');
         document.getElementById('order-form').reset();
         
-        showToast("تم إرسال طلب الشراء والتسجيل بنجاح! سيتواصل معك المهندس المختص", "success");
+        showToast("تم إرسال طلب الشراء والتسجيل بنجاح! تم الحفظ في الفايربيز", "success");
       } catch (err) {
         console.error("Order submit error:", err);
-        showToast("حدث خطأ أثناء إرسال الطلب، يرجى التاكد من الاتصال بالإنترنت", "error");
+        showToast("حدث خطأ أثناء إرسال الطلب: " + err.message, "error");
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-paper-plane ml-2"></i>تأكيد وإرسال طلب الشراء والتركيب`;
@@ -1209,6 +1222,11 @@
     window.handleAddProductSubmit = async function(e) {
       e.preventDefault();
 
+      if (!auth.currentUser && !currentUser) {
+        showToast("يرجى الانتظار لحين اكتمال الاتصال بالفايربيز", "warning");
+        return;
+      }
+
       const prodData = {
         name: document.getElementById('prod-name').value,
         price: Number(document.getElementById('prod-price').value),
@@ -1225,10 +1243,10 @@
         
         closeModal('modal-add-product');
         document.getElementById('add-product-form').reset();
-        showToast("تمت إضافة الجهاز للمتجر بنجاح!", "success");
+        showToast("تمت إضافة الجهاز للفايربيز والمتجر بنجاح!", "success");
       } catch (err) {
         console.error("Add product error:", err);
-        showToast("تعذر إضافة الجهاز إلى الفايربيز", "error");
+        showToast("تعذر إضافة الجهاز إلى الفايربيز: " + err.message, "error");
       }
     };
 
@@ -1237,9 +1255,10 @@
       try {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'orders', orderId);
         await updateDoc(docRef, { status: newStatus });
-        showToast("تم تحديث حالة الطلب", "success");
+        showToast("تم تحديث حالة الطلب في الفايربيز بنجاح", "success");
       } catch (err) {
-        showToast("تعذر تحديث الحالة", "error");
+        console.error("Update status error:", err);
+        showToast("تعذر تحديث الحالة في قاعدة البيانات", "error");
       }
     };
 
@@ -1247,9 +1266,10 @@
       try {
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'products', prodId);
         await deleteDoc(docRef);
-        showToast("تم حذف الجهاز من المتجر", "info");
+        showToast("تم حذف الجهاز من المتجر وقاعدة البيانات", "info");
       } catch (err) {
-        showToast("تعذر الحذف", "error");
+        console.error("Delete product error:", err);
+        showToast("تعذر الحذف من قاعدة البيانات", "error");
       }
     };
 
@@ -1339,7 +1359,6 @@
       if (!container) return;
 
       const toast = document.createElement('div');
-      
       let borderClass = 'border-brand-500 bg-slate-900 text-white';
       let icon = '<i class="fa-solid fa-circle-info text-brand-400 ml-2"></i>';
 
