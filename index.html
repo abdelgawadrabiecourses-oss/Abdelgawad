@@ -296,7 +296,13 @@
           <p class="text-slate-400 text-sm mt-1">اختر الأجهزة المناسبة لنوع وحجم أبواب المحل التجاري لديك وأضفها لسلة الشراء</p>
         </div>
         
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- QUICK TEST ORDER BUTTON -->
+          <button onclick="fillQuickDemoOrder()" class="px-4 py-2.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 font-bold text-xs border border-purple-500/30 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-vial-circle-check text-purple-400"></i>
+            🧪 ملء طلب تجريبي للاختبار
+          </button>
+
           <button onclick="openCartModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition-all flex items-center gap-2">
             <i class="fa-solid fa-basket-shopping"></i>
             عرض سلة المشتريات (<span id="store-cart-counter">0</span>)
@@ -498,6 +504,7 @@
                 <th class="py-3 px-4">رقم الهاتف والتواصل</th>
                 <th class="py-3 px-4">المنتجات المطلوبة (السلة)</th>
                 <th class="py-3 px-4">إجمالي المبلغ</th>
+                <th class="py-3 px-4">طريقة الدفع</th>
                 <th class="py-3 px-4">العنوان</th>
                 <th class="py-3 px-4">الحالة</th>
                 <th class="py-3 px-4">إجراءات</th>
@@ -505,7 +512,7 @@
             </thead>
             <tbody id="admin-orders-table-body" class="divide-y divide-slate-800">
               <tr>
-                <td colspan="7" class="text-center py-8 text-slate-500">جاري جلب الطلبات...</td>
+                <td colspan="8" class="text-center py-8 text-slate-500">جاري جلب الطلبات...</td>
               </tr>
             </tbody>
           </table>
@@ -534,14 +541,20 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20">
-          <i class="fa-solid fa-cart-flatbed"></i>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20">
+            <i class="fa-solid fa-cart-flatbed"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-black text-white">سلة الشراء والتسجيل</h3>
+            <p class="text-slate-400 text-xs mt-0.5">مراجعة الأجهزة المختارة وتأكيد طلب التوصيل والتركيب</p>
+          </div>
         </div>
-        <div>
-          <h3 class="text-2xl font-black text-white">سلة الشراء والتسجيل</h3>
-          <p class="text-slate-400 text-xs mt-0.5">مراجعة الأجهزة المختارة وتأكيد طلب التوصيل والتركيب</p>
-        </div>
+
+        <button onclick="fillQuickDemoOrder()" class="px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 font-bold text-xs border border-purple-500/30 transition-all">
+          <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> تجربة تعبئة بيانات سريعة
+        </button>
       </div>
 
       <!-- Cart Items List Container -->
@@ -586,6 +599,38 @@
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1">عنوان المحل التفصيلي</label>
           <textarea id="order-address" rows="2" placeholder="شارع التجارة - بجوار..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <!-- Payment Methods Selection -->
+        <div class="space-y-2 pt-2">
+          <label class="block text-xs font-bold text-slate-300">طريقة الدفع المفضلة</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            
+            <label class="cursor-pointer border border-slate-700 hover:border-brand-500 rounded-xl p-3 bg-slate-900 flex flex-col items-center justify-center gap-1 text-center transition-all has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10 has-[:checked]:text-white text-slate-400">
+              <input type="radio" name="payment-method" value="الدفع عند التركيب" checked class="hidden" />
+              <i class="fa-solid fa-hand-holding-dollar text-brand-400 text-lg"></i>
+              <span class="font-bold">عند التركيب</span>
+            </label>
+
+            <label class="cursor-pointer border border-slate-700 hover:border-brand-500 rounded-xl p-3 bg-slate-900 flex flex-col items-center justify-center gap-1 text-center transition-all has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10 has-[:checked]:text-white text-slate-400">
+              <input type="radio" name="payment-method" value="فودافون كاش / محفظة" class="hidden" />
+              <i class="fa-solid fa-wallet text-rose-400 text-lg"></i>
+              <span class="font-bold">فودافون كاش</span>
+            </label>
+
+            <label class="cursor-pointer border border-slate-700 hover:border-brand-500 rounded-xl p-3 bg-slate-900 flex flex-col items-center justify-center gap-1 text-center transition-all has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10 has-[:checked]:text-white text-slate-400">
+              <input type="radio" name="payment-method" value="InstaPay إنستاباي" class="hidden" />
+              <i class="fa-solid fa-mobile-retro text-purple-400 text-lg"></i>
+              <span class="font-bold">InstaPay</span>
+            </label>
+
+            <label class="cursor-pointer border border-slate-700 hover:border-brand-500 rounded-xl p-3 bg-slate-900 flex flex-col items-center justify-center gap-1 text-center transition-all has-[:checked]:border-brand-500 has-[:checked]:bg-brand-500/10 has-[:checked]:text-white text-slate-400">
+              <input type="radio" name="payment-method" value="بطاقة ائتمان / فيزا" class="hidden" />
+              <i class="fa-solid fa-credit-card text-emerald-400 text-lg"></i>
+              <span class="font-bold">فيزا / كارت</span>
+            </label>
+
+          </div>
         </div>
 
         <button type="submit" id="btn-submit-order" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-base shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2">
@@ -727,6 +772,127 @@
     let isSecurityLocked = false;
     let activeCategory = 'all';
 
+    // Helper Cart Logic Functions
+    window.addToCart = function(productId) {
+      const prod = productsList.find(p => p.id === productId);
+      if (!prod) return;
+
+      const existingIndex = shoppingCart.findIndex(item => item.id === productId);
+      if (existingIndex > -1) {
+        shoppingCart[existingIndex].qty += 1;
+      } else {
+        shoppingCart.push({
+          id: prod.id,
+          name: prod.name,
+          price: prod.price,
+          type: prod.type || 'جهاز تحكم',
+          qty: 1
+        });
+      }
+
+      updateCartBadge();
+      showToast(`تم إضافة "${prod.name}" إلى سلة المشتريات`, "success");
+    };
+
+    window.removeFromCart = function(productId) {
+      shoppingCart = shoppingCart.filter(item => item.id !== productId);
+      renderCartItems();
+      updateCartBadge();
+      showToast("تم إزالة المنتج من السلة", "info");
+    };
+
+    window.changeCartQty = function(productId, delta) {
+      const item = shoppingCart.find(i => i.id === productId);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+          removeFromCart(productId);
+        } else {
+          renderCartItems();
+          updateCartBadge();
+        }
+      }
+    };
+
+    function updateCartBadge() {
+      const totalCount = shoppingCart.reduce((sum, item) => sum + item.qty, 0);
+      const badge1 = document.getElementById('cart-badge-count');
+      const badge2 = document.getElementById('store-cart-counter');
+      if (badge1) badge1.textContent = totalCount;
+      if (badge2) badge2.textContent = totalCount;
+    }
+
+    function renderCartItems() {
+      const container = document.getElementById('cart-items-container');
+      const totalEl = document.getElementById('cart-total-price');
+      if (!container) return;
+
+      if (shoppingCart.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 space-y-2">
+            <i class="fa-solid fa-basket-shopping text-4xl text-slate-600"></i>
+            <div class="text-slate-400 font-bold text-sm">سلة المشتريات فارغة حالياً</div>
+            <div class="text-slate-500 text-xs">قم بإضافة أجهزة من المتجر أولاً لتتمكن من إتمام الطلب</div>
+          </div>
+        `;
+        if (totalEl) totalEl.textContent = '0 ج.م';
+        return;
+      }
+
+      let grandTotal = 0;
+      container.innerHTML = shoppingCart.map(item => {
+        const itemTotal = item.price * item.qty;
+        grandTotal += itemTotal;
+
+        return `
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+            <div class="space-y-0.5">
+              <div class="font-bold text-white text-sm">${item.name}</div>
+              <div class="text-xs text-slate-400">${item.price} ج.م × ${item.qty} = <span class="text-emerald-400 font-bold">${itemTotal} ج.م</span></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="flex items-center bg-slate-800 rounded-lg border border-slate-700">
+                <button type="button" onclick="changeCartQty('${item.id}', -1)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-white font-bold">-</button>
+                <span class="px-2 font-mono text-xs text-brand-300 font-bold">${item.qty}</span>
+                <button type="button" onclick="changeCartQty('${item.id}', 1)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-white font-bold">+</button>
+              </div>
+
+              <button type="button" onclick="removeFromCart('${item.id}')" class="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 flex items-center justify-center text-xs transition-all">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (totalEl) totalEl.textContent = `${grandTotal} ج.م`;
+    }
+
+    // Quick Test Demo Filler Function
+    window.fillQuickDemoOrder = function() {
+      // 1. Ensure at least one product is in cart
+      if (shoppingCart.length === 0) {
+        addToCart('p1'); // Add ShutterTech Basic 1.0
+        addToCart('p8'); // Add Solar & Battery Backup
+      }
+
+      // 2. Auto-fill form fields
+      document.getElementById('order-customer-name').value = "أحمد محمد محمود (طلب تجريبي)";
+      document.getElementById('order-store-name').value = "سوبرماركت التيسير الذكي";
+      document.getElementById('order-phone').value = "01012345678";
+      document.getElementById('order-city').value = "القاهرة - المعادي";
+      document.getElementById('order-address').value = "شارع 9 الرئيسي - بجوار محطة المترو";
+
+      // Select default payment method for demo
+      const vodafoneRadio = document.querySelector('input[name="payment-method"][value="فودافون كاش / محفظة"]');
+      if (vodafoneRadio) vodafoneRadio.checked = true;
+
+      // 3. Open Modal
+      openCartModal();
+      showToast("تم ملء بيانات الطلب التجريبي بنجاح! اضغط تأكيد لإرساله للفايربيز", "success");
+    };
+
     async function initAuth() {
       try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -862,7 +1028,7 @@
       if (!tbody) return;
 
       if (ordersList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">لم يتم استلام أي طلبات حتى الآن</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500">لم يتم استلام أي طلبات حتى الآن</td></tr>`;
         return;
       }
 
@@ -880,6 +1046,11 @@
             <td class="py-3 px-4 font-mono text-xs dir-ltr text-right text-cyan-400">${order.phone || '-'}</td>
             <td class="py-3 px-4">${cartSummary}</td>
             <td class="py-3 px-4 font-black text-emerald-400">${order.totalAmount || 0} ج.م</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-1 rounded bg-slate-800 border border-slate-700 text-xs font-semibold text-brand-300">
+                ${order.paymentMethod || 'عند التركيب'}
+              </span>
+            </td>
             <td class="py-3 px-4 text-xs text-slate-400 max-w-xs truncate">${order.city || ''} - ${order.address || ''}</td>
             <td class="py-3 px-4">
               <span class="px-2.5 py-1 rounded-full text-xs font-bold ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
@@ -931,12 +1102,16 @@
 
       const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
+      const paymentRadio = document.querySelector('input[name="payment-method"]:checked');
+      const selectedPayment = paymentRadio ? paymentRadio.value : 'الدفع عند التركيب';
+
       const orderData = {
         customerName: document.getElementById('order-customer-name').value,
         storeName: document.getElementById('order-store-name').value,
         phone: document.getElementById('order-phone').value,
         city: document.getElementById('order-city').value,
         address: document.getElementById('order-address').value,
+        paymentMethod: selectedPayment,
         items: shoppingCart,
         totalAmount: grandTotal,
         status: 'pending',
