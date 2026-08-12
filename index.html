@@ -98,7 +98,7 @@
           <i class="fa-solid fa-house text-xs ml-1.5"></i>الرئيسية
         </button>
         <button id="nav-store" onclick="switchTab('client-store')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all">
-          <i class="fa-solid fa-store text-xs ml-1.5"></i>المتجر الأجهزة
+          <i class="fa-solid fa-store text-xs ml-1.5"></i>متجر الأجهزة
         </button>
         <button id="nav-demo" onclick="switchTab('client-demo')" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-400 hover:text-white transition-all">
           <i class="fa-solid fa-mobile-screen-button text-xs ml-1.5"></i>تجربة التحكم بالباب
@@ -108,11 +108,18 @@
         </button>
       </nav>
 
-      <!-- Action Button -->
+      <!-- Action Button & Cart Trigger -->
       <div class="flex items-center gap-3">
+        <!-- Floating/Header Shopping Cart Button -->
+        <button onclick="openCartModal()" class="relative px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-cart-shopping text-brand-400 text-lg"></i>
+          <span class="hidden sm:inline">السلة</span>
+          <span id="cart-badge-count" class="w-5 h-5 rounded-full bg-brand-500 text-white text-xs flex items-center justify-center font-black">0</span>
+        </button>
+
         <button onclick="scrollToStore()" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5">
-          <i class="fa-solid fa-cart-shopping"></i>
-          اطلب جهازك الآن
+          <i class="fa-solid fa-store"></i>
+          المتجر المباشر
         </button>
 
         <!-- Mobile Menu Toggle Button -->
@@ -283,25 +290,31 @@
     <!-- VIEW 2: CLIENT WEB STORE (المتجر)          -->
     <!-- ========================================== -->
     <section id="view-client-store" class="hidden space-y-10">
-      
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h2 class="text-3xl font-extrabold text-white">متجر أجهزة التحكم الذكية</h2>
-          <p class="text-slate-400 text-sm mt-1">اختر الجهاز المناسب لنوع وحجم أبواب المحل التجاري لديك</p>
+          <h2 class="text-3xl font-extrabold text-white">متجر أجهزة التحكم بالأبواب الذكية</h2>
+          <p class="text-slate-400 text-sm mt-1">اختر الأجهزة المناسبة لنوع وحجم أبواب المحل التجاري لديك وأضفها لسلة الشراء</p>
         </div>
-        <div class="flex items-center gap-2 bg-slate-800 p-2 rounded-xl text-xs text-slate-300">
-          <i class="fa-solid fa-shield-check text-emerald-400 text-sm"></i>
-          جميع الأجهزة تشمل ضمان سنة كاملة والدعم الفني
+        
+        <div class="flex items-center gap-3">
+          <button onclick="openCartModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-bold text-sm shadow-lg shadow-brand-500/20 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-basket-shopping"></i>
+            عرض سلة المشتريات (<span id="store-cart-counter">0</span>)
+          </button>
         </div>
       </div>
 
-      <!-- Products Grid (Populated dynamically from Firestore) -->
-      <div id="store-products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Loading Spinner Placeholder -->
-        <div class="col-span-3 text-center py-12 text-slate-500">
-          <i class="fa-solid fa-circle-notch fa-spin text-3xl text-brand-500 mb-3 block"></i>
-          جاري تحميل المنتجات المتاحة من قاعدة البيانات...
-        </div>
+      <!-- Category Filter Pills -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="filterProducts('all', this)" class="prod-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 text-white border border-brand-500">الكل</button>
+        <button onclick="filterProducts('basic', this)" class="prod-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">أجهزة المحلات الصغرى</button>
+        <button onclick="filterProducts('pro', this)" class="prod-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">الأجهزة المزدوجة والصناعية</button>
+        <button onclick="filterProducts('accessory', this)" class="prod-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:text-white">الملحقات والبطاريات</button>
+      </div>
+
+      <!-- Products Grid (Populated dynamically) -->
+      <div id="store-products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- JS render fallback -->
       </div>
 
     </section>
@@ -474,19 +487,19 @@
             <i class="fa-solid fa-list-check text-brand-500"></i>
             طلبات الشراء والتسجيل الجديدة من العملاء
           </h3>
-          <span class="text-xs text-slate-400">تحديث لحظي بدون إعادة تحميل الصفحة</span>
+          <span class="text-xs text-slate-400">تحديث لحظي من الفايربيز بدون إعادة تحميل</span>
         </div>
 
         <div class="overflow-x-auto">
           <table class="w-full text-right text-sm text-slate-300">
             <thead class="bg-slate-900/80 text-slate-400 text-xs uppercase border-b border-slate-800">
               <tr>
-                <th class="py-3 px-4">اسم العميل</th>
-                <th class="py-3 px-4">اسم المحل التجارية</th>
-                <th class="py-3 px-4">رقم الهاتف</th>
-                <th class="py-3 px-4">الجهاز المطلوب</th>
+                <th class="py-3 px-4">اسم العميل والمحل</th>
+                <th class="py-3 px-4">رقم الهاتف والتواصل</th>
+                <th class="py-3 px-4">المنتجات المطلوبة (السلة)</th>
+                <th class="py-3 px-4">إجمالي المبلغ</th>
                 <th class="py-3 px-4">العنوان</th>
-                <th class="py-3 px-4">حالة الطلب</th>
+                <th class="py-3 px-4">الحالة</th>
                 <th class="py-3 px-4">إجراءات</th>
               </tr>
             </thead>
@@ -508,67 +521,76 @@
           </h3>
         </div>
 
-        <div id="admin-products-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Dynamic Products Editor Cards -->
+        <div id="admin-products-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated products in Admin -->
         </div>
       </div>
 
     </section>
 
-  </main>
-
-  <footer class="mt-auto border-t border-slate-800/80 glass-card py-8">
-    <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 text-xs space-y-2">
-      <p>© 2026 ShutterTech - جميع الحقوق محفوظة | نظام التحكم الذكي بأبواب المحلات التجارية</p>
-      <p class="text-slate-600">Firebase Project ID: <span class="text-brand-500 font-mono">landing-78135</span></p>
-    </div>
-  </footer>
-
-  
-  <!-- MODAL 1: Customer Order Registration Modal -->
-  <div id="modal-order" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-lg rounded-3xl border border-slate-700 p-6 sm:p-8 space-y-6 relative shadow-2xl">
-      <button onclick="closeModal('modal-order')" class="absolute top-5 left-5 text-slate-400 hover:text-white text-xl">
+  <div id="modal-cart" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-2xl rounded-3xl border border-slate-700 p-6 sm:p-8 space-y-6 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+      <button onclick="closeModal('modal-cart')" class="absolute top-5 left-5 text-slate-400 hover:text-white text-xl">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <div>
-        <span class="text-xs font-bold text-brand-400 uppercase tracking-wider">طلب جهاز جديد</span>
-        <h3 class="text-2xl font-black text-white mt-1">تسجيل بيانات تركيب الجهاز</h3>
-        <p class="text-slate-400 text-xs mt-1">أدخل بيانات المحل وسيقوم مهندس التركيبات بالتواصل معك فوراً</p>
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20">
+          <i class="fa-solid fa-cart-flatbed"></i>
+        </div>
+        <div>
+          <h3 class="text-2xl font-black text-white">سلة الشراء والتسجيل</h3>
+          <p class="text-slate-400 text-xs mt-0.5">مراجعة الأجهزة المختارة وتأكيد طلب التوصيل والتركيب</p>
+        </div>
       </div>
 
-      <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-4">
-        <input type="hidden" id="order-selected-product" value="" />
-        
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">اسمك الكريـم</label>
-          <input type="text" id="order-customer-name" required placeholder="مثال: أحمد محمود" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
-        </div>
+      <!-- Cart Items List Container -->
+      <div id="cart-items-container" class="space-y-3 border-y border-slate-800 py-4 max-h-60 overflow-y-auto pr-1">
+        <!-- Rendered Dynamically -->
+      </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">اسم المحل التجاري / الشركة</label>
-          <input type="text" id="order-store-name" required placeholder="مثال: سوبرماركت البركة" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+      <!-- Cart Total Summary -->
+      <div class="flex items-center justify-between bg-slate-900/80 p-4 rounded-2xl border border-slate-800">
+        <span class="text-slate-300 font-bold text-sm">إجمالي القيمة التقديرية للأجهزة:</span>
+        <span class="text-2xl font-black text-emerald-400" id="cart-total-price">0 ج.م</span>
+      </div>
+
+      <!-- Customer Details Form -->
+      <form id="order-form" onsubmit="handleOrderSubmit(event)" class="space-y-4 pt-2">
+        <h4 class="text-sm font-bold text-brand-400 uppercase tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-user-pen"></i> بيانات صاحب المحل لطلب التركيب
+        </h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">الاسم بالكامل</label>
+            <input type="text" id="order-customer-name" required placeholder="مثال: المهندس أحمد محمود" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">اسم المحل التجاري / الشركة</label>
+            <input type="text" id="order-store-name" required placeholder="مثال: سوبرماركت البركة" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف (واتساب)</label>
+            <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف (واتساب للتواصل)</label>
             <input type="tel" id="order-phone" required placeholder="010XXXXXXXX" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-300 mb-1">المحافظة / المدينة</label>
-            <input type="text" id="order-city" required placeholder="مثال: القاهرة / نصر" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
+            <input type="text" id="order-city" required placeholder="مثال: القاهرة - مدينة نصر" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">عنوان المحل تفصيلياً</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1">عنوان المحل التفصيلي</label>
           <textarea id="order-address" rows="2" placeholder="شارع التجارة - بجوار..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500"></textarea>
         </div>
 
-        <button type="submit" id="btn-submit-order" class="w-full py-4 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-extrabold text-base shadow-lg shadow-brand-500/25 transition-all">
-          تأكيد وإرسال الطلب للشركة
+        <button type="submit" id="btn-submit-order" class="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-base shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-paper-plane"></i>
+          تأكيد وإرسال طلب الشراء والتركيب
         </button>
       </form>
     </div>
@@ -582,16 +604,19 @@
       </button>
 
       <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center text-2xl">
-        <i class="fa-solid fa-lock"></i>
+        <i class="fa-solid fa-shield-halved"></i>
       </div>
 
       <div>
-        <h3 class="text-2xl font-black text-white">دخول المالك</h3>
-        <p class="text-slate-400 text-xs mt-1">أدخل كلمة المرور الخاصة بالشركة للوصول للوحة التحكم</p>
+        <h3 class="text-2xl font-black text-white">دخول المالك (Admin)</h3>
+        <p class="text-slate-400 text-xs mt-1">أدخل كود المالك المبرمج للوصول للوحة الإدارة والتعديل</p>
+        <span class="inline-block mt-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-mono font-bold border border-amber-500/30">
+          الكود الافتراضي: 1234
+        </span>
       </div>
 
       <div class="space-y-4">
-        <input type="password" id="admin-passcode" placeholder="أدخل كود المالك (الافتراضي: 1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-white text-lg font-mono focus:outline-none focus:border-amber-500" />
+        <input type="password" id="admin-passcode" placeholder="أدخل الكود (الافتراضي: 1234)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-center text-white text-lg font-mono focus:outline-none focus:border-amber-500" />
         
         <button onclick="verifyAdminPasscode()" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/20 transition-all">
           دخول لوحة التعديل
@@ -678,13 +703,29 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    // Initial default dataset for instant offline rendering
+    const defaultProducts = [
+      { id: "p1", name: "ShutterTech Basic 1.0", price: 1450, category: "basic", type: "للأبواب الفرادية", desc: "جهاز تحكم ذكي أساسي مزود بـ Relay واحد، يتصل بالواي فاي والـ 4G وتطبيق الموبايل المباشر.", icon: "fa-microchip" },
+      { id: "p2", name: "ShutterTech Smart Relay Mini", price: 980, category: "basic", type: "للمحلات الصغيرة", desc: "وحدة اقتصادية فائقة الصغر سريعة التركيب داخل علبة المفتاح الحالية للباب بدون تعديل.", icon: "fa-bolt" },
+      { id: "p3", name: "ShutterTech Lite Bluetooth", price: 1200, category: "basic", type: "تحكم بدون إنترنت", desc: "يعمل بتقنية البلوتوث المباشرة المحمية مع الموبايل، مناسب للمحلات في الأماكن المغلقة بدون تغطية واي فاي.", icon: "fa-bluetooth-b" },
+      { id: "p4", name: "ShutterTech Pro Dual", price: 2200, category: "pro", type: "للأبواب الثقيلة والمزدوجة", desc: "يحتوي على مدخلين محرك للتحكم في بابين رولينج معاً، وحساس مغناطيسي لقياس حالة انغلاق الباب.", icon: "fa-robot" },
+      { id: "p5", name: "ShutterTech Heavy Industrial IP67", price: 3600, category: "pro", type: "للمصانع والمستودعات", desc: "جهاز صناعي مقاوم للماء والأتربة بمعيار IP67، يدعم الريموت التقليدي وبصمة الإصبع + الموبايل.", icon: "fa-industry" },
+      { id: "p6", name: "ShutterTech Gateway 4G Hub", price: 4500, category: "pro", type: "سلاسل المحلات والمولات", desc: "لوحة تحكم مركزية بشريحة SIM 4G لربط حتى 10 أبواب محلات تجارية في موقع واحد مع تنبيهات لحظية.", icon: "fa-network-wired" },
+      { id: "p7", name: "ShutterTech Tri-Phase Power", price: 5200, category: "pro", type: "محركات 3-Phase الكبيرة", desc: "مخصص لمحركات الشتر الضخمة ذات القدرات عالية الفولتية (380V) مع حماية ضد ارتداد التيار.", icon: "fa-plug-circle-bolt" },
+      { id: "p8", name: "ShutterTech Solar & Battery Backup", price: 1850, category: "accessory", type: "وحدة طوارئ وطاقة", desc: "بطارية ليثيوم شمسية تضمن فتح وغلق الباب الذكي حتى عند انقطاع الكهرباء الكلي عن المحل.", icon: "fa-car-battery" },
+      { id: "p9", name: "ShutterTech Laser Safety Sensor", price: 650, category: "accessory", type: "حساس حماية ليزر", desc: "يمنع إنزال الشتر تلقائياً عند وجود أي عائق أو شخص أو سيارة تحت الباب لحماية ممتلكاتك.", icon: "fa-eye" },
+      { id: "p10", name: "ShutterTech Wireless Keypad", price: 850, category: "accessory", type: "لوحة كود خارجية", desc: "لوحة رقمية مضادة للماء تثبت بالخارج لفتح الباب بالرمز السري الخاص بالعمال دون الحاجة للموبايل.", icon: "fa-key" },
+      { id: "p11", name: "ShutterTech Armor RF Remote", price: 350, category: "accessory", type: "ريموت كنترول درع", desc: "ريموت مشفر 433MHz مقاوم للصدمات والماء يعمل بمدى يصل إلى 100 متر.", icon: "fa-walkie-talkie" }
+    ];
+
     // Global App State Variables
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'landing-78135';
     let currentUser = null;
-    let productsList = [];
+    let productsList = [...defaultProducts]; // Start immediately with default list
     let ordersList = [];
+    let shoppingCart = [];
     let isSecurityLocked = false;
-    let currentShutterStatus = 'OPEN'; // 'OPEN', 'CLOSED', 'PAUSED'
+    let activeCategory = 'all';
 
     async function initAuth() {
       try {
@@ -695,35 +736,31 @@
           const userCredential = await signInAnonymously(auth);
           currentUser = userCredential.user;
         }
-        console.log("Firebase Auth success. User UID:", currentUser?.uid);
-        
-        // Start live snapshot listeners
         setupFirestoreListeners();
       } catch (err) {
-        console.error("Auth error:", err);
-        showToast("تنبيه: تعمل في وضع العرض المحلي بدون اتصال حي بالسيرفر", "warning");
+        console.warn("Auth error or offline mode active:", err);
+      } finally {
+        // Initial immediate render
+        renderProductsStore();
+        renderAdminProducts();
       }
     }
 
     function setupFirestoreListeners() {
-      // Collections Paths according to environment rules
       const productsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'products');
       const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
 
-      // 1. Listen for Products
+      // 1. Listen for Store Products
       onSnapshot(query(productsColRef), (snapshot) => {
-        productsList = [];
-        snapshot.forEach((docSnap) => {
-          productsList.push({ id: docSnap.id, ...docSnap.data() });
-        });
-        
-        // Seed default products if empty in Firestore
-        if (productsList.length === 0) {
-          seedInitialProducts(productsColRef);
-        } else {
-          renderProductsStore();
-          renderAdminProducts();
+        if (!snapshot.empty) {
+          const remoteList = [];
+          snapshot.forEach((docSnap) => {
+            remoteList.push({ id: docSnap.id, ...docSnap.data() });
+          });
+          productsList = remoteList;
         }
+        renderProductsStore();
+        renderAdminProducts();
       }, (error) => {
         console.error("Products listener error:", error);
       });
@@ -736,64 +773,53 @@
         });
         
         renderAdminOrdersTable();
-        document.getElementById('stat-total-orders').textContent = ordersList.length;
+        const statEl = document.getElementById('stat-total-orders');
+        if (statEl) statEl.textContent = ordersList.length;
       }, (error) => {
         console.error("Orders listener error:", error);
       });
     }
 
-    async function seedInitialProducts(productsColRef) {
-      const defaults = [
-        {
-          name: "ShutterTech Basic 1.0",
-          price: 1450,
-          type: "للأبواب الرولينج العادية",
-          desc: "جهاز تحكم ذكي مزود بريلاي واحد، يتصل بالواي فاي والـ 4G، وتطبيق الموبايل المباشر.",
-          icon: "fa-microchip"
-        },
-        {
-          name: "ShutterTech Pro Dual",
-          price: 2200,
-          type: "للأبواب الثقيلة والمزدوجة",
-          desc: "يحتوي على مدخلين محرك للتحكم في بابين رولينج معاً، وحساس مغناطيسي لقياس انغلاق الباب.",
-          icon: "fa-robot"
-        },
-        {
-          name: "ShutterTech Heavy Industrial",
-          price: 3600,
-          type: "للمصانع والمستودعات الكبيرة",
-          desc: "جهاز صناعي مقاوم للماء والأتربة بمعيار IP67، يدعم الريموت التقليدي وبصمة الإصبع + الموبايل.",
-          icon: "fa-industry"
-        }
-      ];
+    window.filterProducts = function(cat, btnElement) {
+      activeCategory = cat;
+      const btns = document.querySelectorAll('.prod-filter-btn');
+      btns.forEach(b => {
+        b.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+        b.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
+      });
 
-      for (const item of defaults) {
-        await addDoc(productsColRef, {
-          ...item,
-          createdAt: new Date().toISOString()
-        });
+      if (btnElement) {
+        btnElement.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
+        btnElement.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
       }
-    }
+
+      renderProductsStore();
+    };
 
     function renderProductsStore() {
       const grid = document.getElementById('store-products-grid');
-      document.getElementById('stat-total-products').textContent = productsList.length;
+      const statTotal = document.getElementById('stat-total-products');
+      if (statTotal) statTotal.textContent = productsList.length;
 
       if (!grid) return;
 
-      if (productsList.length === 0) {
-        grid.innerHTML = `<div class="col-span-3 text-center text-slate-500">لا توجد أجهزة متاحة حالياً.</div>`;
+      const filtered = activeCategory === 'all' 
+        ? productsList 
+        : productsList.filter(p => p.category === activeCategory);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-3 text-center text-slate-500 py-8">لا توجد أجهزة متوفرة في هذا القسم حالياً.</div>`;
         return;
       }
 
-      grid.innerHTML = productsList.map(prod => `
-        <div class="glass-card rounded-3xl p-6 border border-slate-800 space-y-5 glass-card-hover transition-all flex flex-col justify-between">
+      grid.innerHTML = filtered.map(prod => `
+        <div class="glass-card rounded-3xl p-6 border border-slate-800 space-y-5 glass-card-hover transition-all flex flex-col justify-between relative overflow-hidden">
           <div class="space-y-4">
             <div class="flex items-center justify-between">
-              <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20">
+              <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-400 flex items-center justify-center text-xl border border-brand-500/20 shadow-inner">
                 <i class="fa-solid ${prod.icon || 'fa-microchip'}"></i>
               </div>
-              <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">${prod.type}</span>
+              <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">${prod.type || 'جهاز تحكم'}</span>
             </div>
 
             <div>
@@ -804,16 +830,32 @@
 
           <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-400 block">السعر التقديري</span>
+              <span class="text-xs text-slate-400 block">السعر للوحدة</span>
               <span class="text-2xl font-black text-emerald-400">${prod.price} <span class="text-xs text-slate-400">ج.م</span></span>
             </div>
-            <button onclick="openOrderModal('${prod.name}')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-lg transition-all">
-              طلب وتحديد الموعد
+            
+            <button onclick="addToCart('${prod.id}')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-cyan-500 hover:from-brand-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg shadow-brand-500/20 transition-all flex items-center gap-2 transform active:scale-95">
+              <i class="fa-solid fa-cart-plus"></i>
+              إضافة للسلة
             </button>
           </div>
         </div>
       `).join('');
     }
+
+    window.filterProducts = function(cat) {
+      activeCategory = cat;
+      const btns = document.querySelectorAll('.prod-filter-btn');
+      btns.forEach(b => {
+        b.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+        b.classList.add('bg-slate-800', 'text-slate-400', 'border-slate-700');
+      });
+
+      event.target.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
+      event.target.classList.remove('bg-slate-800', 'text-slate-400', 'border-slate-700');
+
+      renderProductsStore();
+    };
 
     function renderAdminOrdersTable() {
       const tbody = document.getElementById('admin-orders-table-body');
@@ -824,25 +866,34 @@
         return;
       }
 
-      tbody.innerHTML = ordersList.map(order => `
-        <tr class="hover:bg-slate-800/50 transition-colors">
-          <td class="py-3 px-4 font-bold text-white">${order.customerName || '-'}</td>
-          <td class="py-3 px-4 text-brand-400">${order.storeName || '-'}</td>
-          <td class="py-3 px-4 font-mono dir-ltr text-right">${order.phone || '-'}</td>
-          <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-md bg-slate-800 text-xs text-slate-200 border border-slate-700">${order.selectedProduct || 'عام'}</span></td>
-          <td class="py-3 px-4 text-xs text-slate-400 max-w-xs truncate">${order.city || ''} - ${order.address || ''}</td>
-          <td class="py-3 px-4">
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
-              ${order.status === 'completed' ? 'مكتمل' : 'طلب جديد'}
-            </span>
-          </td>
-          <td class="py-3 px-4">
-            <button onclick="toggleOrderStatus('${order.id}', '${order.status}')" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">
-              تغيير الحالة
-            </button>
-          </td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = ordersList.map(order => {
+        const cartSummary = (order.items && order.items.length > 0)
+          ? order.items.map(i => `<div class="text-xs text-brand-300">• ${i.name} (${i.qty}x)</div>`).join('')
+          : `<span class="text-xs text-slate-400">${order.selectedProduct || 'طلب عام'}</span>`;
+
+        return `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-white">${order.customerName || '-'}</div>
+              <div class="text-xs text-slate-400">${order.storeName || '-'}</div>
+            </td>
+            <td class="py-3 px-4 font-mono text-xs dir-ltr text-right text-cyan-400">${order.phone || '-'}</td>
+            <td class="py-3 px-4">${cartSummary}</td>
+            <td class="py-3 px-4 font-black text-emerald-400">${order.totalAmount || 0} ج.م</td>
+            <td class="py-3 px-4 text-xs text-slate-400 max-w-xs truncate">${order.city || ''} - ${order.address || ''}</td>
+            <td class="py-3 px-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                ${order.status === 'completed' ? 'تم التواصل والتركيب' : 'جديد قيد الانتظار'}
+              </span>
+            </td>
+            <td class="py-3 px-4">
+              <button onclick="toggleOrderStatus('${order.id}', '${order.status}')" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 transition-all">
+                تغيير الحالة
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderAdminProducts() {
@@ -853,18 +904,69 @@
         <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 relative">
           <div class="flex items-center justify-between">
             <span class="text-sm font-bold text-white">${prod.name}</span>
-            <button onclick="deleteProduct('${prod.id}')" class="text-rose-400 hover:text-rose-300 text-xs">
+            <button onclick="deleteProduct('${prod.id}')" class="text-rose-400 hover:text-rose-300 text-xs p-1">
               <i class="fa-solid fa-trash"></i>
             </button>
           </div>
           <div class="text-xs text-slate-400">${prod.desc}</div>
           <div class="flex items-center justify-between text-xs pt-2 border-t border-slate-800">
             <span class="text-emerald-400 font-bold text-sm">${prod.price} ج.م</span>
-            <span class="text-slate-500">${prod.type}</span>
+            <span class="text-slate-500">${prod.type || 'عام'}</span>
           </div>
         </div>
       `).join('');
     }
+
+    window.handleOrderSubmit = async function(e) {
+      e.preventDefault();
+      
+      if (shoppingCart.length === 0) {
+        showToast("برجاء إضافة جهاز واحد على الأقل للسلة قبل إرسال الطلب", "warning");
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-order');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin ml-2"></i>جاري إرسال الطلب للسيرفر...`;
+
+      const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+      const orderData = {
+        customerName: document.getElementById('order-customer-name').value,
+        storeName: document.getElementById('order-store-name').value,
+        phone: document.getElementById('order-phone').value,
+        city: document.getElementById('order-city').value,
+        address: document.getElementById('order-address').value,
+        items: shoppingCart,
+        totalAmount: grandTotal,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
+        await addDoc(ordersColRef, orderData);
+        
+        // Reset Cart and Modal Form
+        shoppingCart = [];
+        updateCartBadge();
+        closeModal('modal-cart');
+        document.getElementById('order-form').reset();
+        
+        showToast("تم إرسال طلب الشراء والتسجيل بنجاح! سيتواصل معك المهندس المختص", "success");
+      } catch (err) {
+        console.error("Order submit error:", err);
+        showToast("حدث خطأ أثناء إرسال الطلب، يرجى التاكد من الاتصال بالإنترنت", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane ml-2"></i>تأكيد وإرسال طلب الشراء والتركيب`;
+      }
+    };
+
+    window.openCartModal = function() {
+      renderCartItems();
+      openModal('modal-cart');
+    };
 
     window.switchTab = function(tabName) {
       const views = ['client-landing', 'client-store', 'client-demo', 'owner-admin'];
@@ -910,11 +1012,6 @@
       if (m) m.classList.add('hidden');
     };
 
-    window.openOrderModal = function(productName) {
-      document.getElementById('order-selected-product').value = productName || 'ShutterTech Device';
-      openModal('modal-order');
-    };
-
     window.openAdminAuthModal = function() {
       openModal('modal-admin-auth');
     };
@@ -934,40 +1031,6 @@
       }
     };
 
-    window.handleOrderSubmit = async function(e) {
-      e.preventDefault();
-      
-      const btn = document.getElementById('btn-submit-order');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin ml-2"></i>جاري الإرسال...`;
-
-      const orderData = {
-        customerName: document.getElementById('order-customer-name').value,
-        storeName: document.getElementById('order-store-name').value,
-        phone: document.getElementById('order-phone').value,
-        city: document.getElementById('order-city').value,
-        address: document.getElementById('order-address').value,
-        selectedProduct: document.getElementById('order-selected-product').value,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-
-      try {
-        const ordersColRef = collection(db, 'artifacts', appId, 'public', 'data', 'orders');
-        await addDoc(ordersColRef, orderData);
-        
-        closeModal('modal-order');
-        document.getElementById('order-form').reset();
-        showToast("تم إرسال طلبك بنجاح! سيتواصل معك أحد مهندسينا قريباً", "success");
-      } catch (err) {
-        console.error("Order submit error:", err);
-        showToast("حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى", "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `تأكيد وإرسال الطلب للشركة`;
-      }
-    };
-
     window.handleAddProductSubmit = async function(e) {
       e.preventDefault();
 
@@ -976,6 +1039,7 @@
         price: Number(document.getElementById('prod-price').value),
         type: document.getElementById('prod-type').value,
         desc: document.getElementById('prod-desc').value,
+        category: "pro",
         icon: "fa-microchip",
         createdAt: new Date().toISOString()
       };
@@ -1053,22 +1117,18 @@
         door.style.height = '1rem';
         badgeHtml = 'مفتوح بالكامل 🟩';
         actionMessage = 'تم فتح الباب من الهاتف المحمول';
-        currentShutterStatus = 'OPEN';
       } else if (action === 'close') {
         door.style.height = '100%';
         badgeHtml = 'مغلق بالكامل 🔴';
         actionMessage = 'تم إغلاق الباب من الهاتف المحمول';
-        currentShutterStatus = 'CLOSED';
       } else if (action === 'pause') {
         door.style.height = '50%';
         badgeHtml = 'متوقف منتصف المسافة 🟡';
         actionMessage = 'تم إيقاف حركة الباب مؤقتاً';
-        currentShutterStatus = 'PAUSED';
       }
 
       if (badge) badge.innerHTML = badgeHtml;
 
-      // Log activity in UI
       if (activityContainer) {
         const timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const newLog = document.createElement('div');
@@ -1134,7 +1194,7 @@
       }, 3500);
     }
 
-    // Initialize Auth and App System
+    // Initialize System on DOM Content Loaded
     window.addEventListener('DOMContentLoaded', () => {
       initAuth();
     });
